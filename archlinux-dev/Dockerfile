@@ -28,6 +28,13 @@ RUN mkdir ~/.ssh \
     && ssh-keyscan github.com >> ~/.ssh/known_hosts
 RUN --mount=type=ssh git clone git@github.com:mkuri/dotfiles.git
 
+# Config bash
+RUN rm -rf /home/${USERNAME}/.bashrc \
+    && ln -s /home/${USERNAME}/dotfiles/bash/.bashrc /home/${USERNAME}/
+
+# Config readline
+RUN ln -s /home/${USERNAME}/dotfiles/readline/.inputrc /home/${USERNAME}/
+
 # Config nvim
 RUN pacman -Syu --noconfirm nodejs \
     && rm -rf /var/cache/pacman/pkg/*
@@ -35,3 +42,6 @@ USER "${USERNAME}"
 COPY library-scripts/*.sh /tmp/library-scripts/
 RUN bash /tmp/library-scripts/neovim.sh
 
+# Config tmux
+RUN mkdir -p /home/${USERNAME}/.config/tmux \
+    && ln -s /home/${USERNAME}/dotfiles/tmux/tmux.conf /home/${USERNAME}/.config/tmux/

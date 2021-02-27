@@ -7,21 +7,19 @@ ARG USERNAME=arch
 USER root
 WORKDIR /home/"${USERNAME}"
 
-# Install main packages for development
-RUN pacman -Syu --noconfirm base-devel git neovim openssh \
-    && rm -rf /var/cache/pacman/pkg/*
+# Install packages for development
+RUN yay -Syu --noconfirm fzf fd ripgrep git-delta-bin lazygit-bin \
+                         ranger tmux translate-shell bash-completion
 
-# Install util packages for development
-RUN pacman -Syu --noconfirm tmux ranger fzf fd ripgrep \
-    && rm -rf /var/cache/pacman/pkg/*
+# Install nightly neovim
+RUN curl -LO https://github.com/neovim/neovim/releases/download/nightly/nvim.appimage \
+    && chmod u+x nvim.appimage \
+    && ./nvim.appimage --appimage-extract \
+    && mkdir -p $HOME/.local/bin \
+    && mv squashfs-root $HOME/.local/ \
+    && ln -s $HOME/.local/squashfs-root/usr/bin/nvim $HOME/.local/bin/ \
+    && rm -rf nvim.appimage
 
-# Install yay
-USER "${USERNAME}"
-RUN git clone https://aur.archlinux.org/yay.git \
-    && cd yay \
-    && makepkg --noconfirm -sirc \
-    && cd ../
-USER root
 
 # Clone dotfiles
 RUN mkdir ~/.ssh \

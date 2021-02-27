@@ -4,8 +4,8 @@ FROM mkuri/archlinux:latest
 
 ARG USERNAME=arch
 
-USER "${USERNAME}"
-WORKDIR /home/"${USERNAME}"
+USER ${USERNAME}
+WORKDIR /home/${USERNAME}
 
 # Install packages for development
 RUN yay -Syu --noconfirm fzf fd ripgrep git-delta-bin lazygit-bin \
@@ -39,3 +39,9 @@ RUN mkdir -p $HOME/.config/nvim \
     && sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
        https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim' \
     && $HOME/.local/bin/nvim -c PlugInstall -c q -c q
+
+# Remove cache
+USER root
+RUN rm -rf /var/cache/pacman/pkg/* \
+    && rm -rf /home/${USERNAME}/.cache/yay/*
+USER ${USERNAME}

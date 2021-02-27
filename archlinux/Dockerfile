@@ -18,4 +18,5 @@ WORKDIR /home/"${USERNAME}"
 RUN git clone https://aur.archlinux.org/yay-bin.git \
     && cd yay-bin \
     && makepkg --noconfirm -sirc \
-    && cd ../
+    && cd ../ \
+    && rm -rf yay-bin

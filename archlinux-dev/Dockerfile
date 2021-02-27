@@ -4,7 +4,7 @@ FROM mkuri/archlinux:latest
 
 ARG USERNAME=arch
 
-USER root
+USER "${USERNAME}"
 WORKDIR /home/"${USERNAME}"
 
 # Install packages for development
@@ -20,26 +20,22 @@ RUN curl -LO https://github.com/neovim/neovim/releases/download/nightly/nvim.app
     && ln -s $HOME/.local/squashfs-root/usr/bin/nvim $HOME/.local/bin/ \
     && rm -rf nvim.appimage
 
-
 # Clone dotfiles
-RUN mkdir ~/.ssh \
-    && ssh-keyscan github.com >> ~/.ssh/known_hosts
-RUN --mount=type=ssh git clone git@github.com:mkuri/dotfiles.git
+RUN git clone https://github.com/mkuri/dotfiles.git
 
-# Config bash
-RUN rm -rf /home/${USERNAME}/.bashrc \
-    && ln -s /home/${USERNAME}/dotfiles/bash/.bashrc /home/${USERNAME}/
+# Config
+RUN rm -rf $HOME/.bashrc $HOME/.bash_profile \
+    && ln -s $HOME/dotfiles/bash/.bashrc $HOME/ \
+    && ln -s $HOME/dotfiles/bash/.bash_profile $HOME/ \
+    && ln -s $HOME/dotfiles/readline/.inputrc $HOME/ \
+    && mkdir -p $HOME/.config/git \
+    && ln -s $HOME/dotfiles/git/config $HOME/.config/git/ \
+    && mkdir -p $HOME/.config/tmux \
+    && ln -s $HOME/dotfiles/tmux/tmux.conf $HOME/.config/tmux/
 
-# Config readline
-RUN ln -s /home/${USERNAME}/dotfiles/readline/.inputrc /home/${USERNAME}/
-
-# Config nvim
-RUN pacman -Syu --noconfirm nodejs \
-    && rm -rf /var/cache/pacman/pkg/*
-USER "${USERNAME}"
-COPY library-scripts/*.sh /tmp/library-scripts/
-RUN bash /tmp/library-scripts/neovim.sh
-
-# Config tmux
-RUN mkdir -p /home/${USERNAME}/.config/tmux \
-    && ln -s /home/${USERNAME}/dotfiles/tmux/tmux.conf /home/${USERNAME}/.config/tmux/
+# Config neovim
+RUN mkdir -p $HOME/.config/nvim \
+    && ln -s $HOME/dotfiles/nvim/init.vim $HOME/.config/nvim/ \
+    && sh -c 'curl -fLo "${XDG_DATA_HOME:-$HOME/.local/share}"/nvim/site/autoload/plug.vim --create-dirs \
+       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim' \
+    && $HOME/.local/bin/nvim -c PlugInstall -c q -c q
